@@ -1,181 +1,321 @@
 'use client';
-import { usePublicApi } from '@/Hook/Api/Client/use-client';
-import { objectAtomFamily } from '@/recoil/atom';
-import { atomKey } from '@/recoil/atom-key';
-import Image from 'next/image';
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { useRecoilValue } from 'recoil';
-import FooterLink from './FooterLink';
-import FooterAccordian from './FooterAccordian';
-import FooterTitle from './FooterTitle';
-import SkeletonComponent from '../Skeleton/SkeletonComponent';
-import GenericCTA from '../GenericCTA';
+
+import { useState } from 'react';
 
 const Footer = () => {
-  const { public_get_api } = usePublicApi();
-  const [footerContent, setFooterContent] = useState([]);
+  // State to track which sections are open (for accordion on mobile)
+  const [openSections, setOpenSections] = useState<{ [key: number]: boolean }>({
+    0: true,
+    1: false,
+    2: false,
+  });
 
-  useEffect(() => {
-    public_get_api({ path: 'cms/footers' }).then((res) => {
-      if (res?.data && res?.success) {
-        setFooterContent(res?.data ? res?.data.sort((a, b) => a.sort_order - b.sort_order) : []);
-      }
-    });
-  }, []);
-  const settings: any = useRecoilValue(objectAtomFamily(atomKey.settings));
-  // @ts-ignore
-
-
-  const bottomLinks: any[] = footerContent
-    ?.filter((item: any) => item?.footer_type === 'bottom_links')
-    ?.flatMap((item: any) => item.footer_value || []);
-
-  const socialLinks: any[] = footerContent
-    ?.filter((item: any) => item?.footer_type === 'social_links')
-    ?.flatMap((item: any) => item.footer_value || []);
-
-  // app stores
-  const appStores = [
-    {
-      key: 'android',
-      url: settings?.download?.app_android_link,
-      imageUrl: '/svg/google-play.svg',
-      altText: 'Get it on Google Play',
-    },
-    {
-      key: 'ios',
-      url: settings?.download?.app_ios_link,
-      imageUrl: '/svg/app-store.svg',
-      altText: 'Download on the App Store',
-    },
-  ];
-
-
-  const AppLink = ({ url, imageUrl, altText }) => {
-    if (!url) return null;
-
-    return (
-      <a href={url} target="_blank" rel="noopener noreferrer" className="inline-block">
-        <Image height={80} width={240} src={imageUrl} alt={altText} className="max-h-8 sm:max-h-9 !w-auto" />
-      </a>
-    );
+  // Toggle accordion section
+  const toggleSection = (index: number) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [index]: !prev[index],
+    }));
   };
 
-  const RenderFooterContent = ({ item, index }) => {
-    switch (item?.footer_type) {
-      case 'about_us':
-        return (
-          <div className="col-span-12 md:col-span-3 space-y-4 mx-auto" key={index}>
-            <Link href="/" className="logo-wrapper h-10 flex items-center w-fit">
-              {!settings?.default?.logo ? (
-                <SkeletonComponent count={1} className="max-sm:hidden h-10 w-20 rounded-full" />
-              ) : (
-                <Image
-                  className="logo-img max-h-6 sm:max-h-10 !w-auto h-auto"
-                  src={settings?.default?.logo}
-                  alt="logo"
-                  width={1000}
-                  height={300}
-                />
-              )}
-            </Link>
-            <div className="text-footer_text space-y-2 text-sm">
-              <div className="cms-info-box" dangerouslySetInnerHTML={{ __html: item?.footer_value?.about }}></div>
-              {/* <p>{item?.footer_value?.copyright}</p> */}
-              {/* <p>{item?.footer_value?.name}</p> */}
-            </div>
-
-            {socialLinks && socialLinks[0] && (
-              <div className="space-y-[18px] w-fit">
-                <div className="flex items-center gap-4 flex-wrap">
-                  {Object.entries(socialLinks[0])
-                    .filter(([key, value]) => value !== null)
-                    .map(([key, value]: any) => (
-                      <Link prefetch={false} key={key} href={value} className="text-gray-500 font-medium link " target="_blank">
-                        <Image
-                          src={`/images/${key}.png`}
-                          className="w-[30px] h-[30px] hover:opacity-80 transition-ease"
-                          alt="social-icons"
-                          width={30}
-                          height={30}
-                        />
-                      </Link>
-                    ))}
-                </div>
-              </div>
-            )}
-
-            <div className="flex items-center flex-wrap gap-2">
-              {appStores.map((store) => (
-                <AppLink key={store.key} url={store.url} imageUrl={store.imageUrl} altText={store.altText} />
-              ))}
-            </div>
-          </div>
-        );
-      case 'links':
-        return (
-          <div className="col-span-12 sm:col-span-4 md:col-span-3" key={index}>
-            <FooterAccordian title={item?.title}>
-              <ul className="space-y-2.5">
-                {item?.footer_value &&
-                  item?.footer_value.map((link, index) => (
-                    <li key={index}>
-                      <FooterLink name={link.label} url={link.url} target={link?.open_newtab ? '_blank' : '_self'} />
-                    </li>
-                  ))}
-              </ul>
-            </FooterAccordian>
-            <div className="max-sm:hidden space-y-6 w-fit mx-auto">
-              <FooterTitle title={item?.title} />
-              <ul className="space-y-5">
-                {item?.footer_value &&
-                  item?.footer_value.map((link, index) => (
-                    <li key={index}>
-                      <FooterLink name={link.label} url={link.url} target={link?.open_newtab ? '_blank' : '_self'} />
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          </div>
-        );
-      default:
-        return <></>;
-    }
+  // Static data for testing
+  const staticData = {
+    logo: '/logo.png', // Replace with your actual logo path
+    about: 'We are a leading company providing innovative solutions to help businesses grow and succeed in the digital world.',
+    copyright: '© 2024 Your Company. All rights reserved.',
+    socialLinks: [
+      { name: 'facebook', url: 'https://facebook.com', icon: '📘' },
+      { name: 'twitter', url: 'https://twitter.com', icon: '🐦' },
+      { name: 'instagram', url: 'https://instagram.com', icon: '📷' },
+      { name: 'linkedin', url: 'https://linkedin.com', icon: '💼' },
+    ],
+    footerSections: [
+      {
+        title: 'Company',
+        links: [
+          { label: 'About Us', url: '/about' },
+          { label: 'Careers', url: '/careers' },
+          { label: 'Press', url: '/press' },
+          { label: 'Blog', url: '/blog' },
+        ],
+      },
+      {
+        title: 'Products',
+        links: [
+          { label: 'Features', url: '/features' },
+          { label: 'Pricing', url: '/pricing' },
+          { label: 'Solutions', url: '/solutions' },
+          { label: 'Integrations', url: '/integrations' },
+        ],
+      },
+      {
+        title: 'Support',
+        links: [
+          { label: 'Help Center', url: '/help' },
+          { label: 'Contact Us', url: '/contact' },
+          { label: 'FAQ', url: '/faq' },
+          { label: 'Community', url: '/community' },
+        ],
+      },
+    ],
+    bottomLinks: [
+      { label: 'Privacy Policy', url: '/privacy' },
+      { label: 'Terms of Service', url: '/terms' },
+      { label: 'Cookie Policy', url: '/cookies' },
+    ],
   };
 
   return (
     <footer
-      className={`relative overflow-hidden bg-footer_bg pt-6 sm:pt-12 shadow-card rounded-t-2xl ${settings?.cta_bar?.cta_enabled && settings?.cta_bar?.cta_location == 'footer'
-        ? 'pb-32 sm:pb-40 xl:pb-24'
-        : 'pb-10 sm:pb-16'
-        }`}
+      style={{
+        backgroundColor: '#1a1a2e',
+        color: '#e0e0e0',
+        padding: '60px 20px 40px',
+        borderTopLeftRadius: '16px',
+        borderTopRightRadius: '16px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
     >
-      <div className="container">
-        <div className="grid sm:grid-cols-12 gap-4 sm:gap-6">
-          {footerContent?.length > 0 &&
-            footerContent?.map((item, index) => <RenderFooterContent key={index} item={item} index={index} />)}
-        </div>
-        {settings?.default?.copyright ? (
-          <div className="ftr_btm px-2.5 flex flex-col sm:flex-row items-center justify-between gap-3 mt-[60px] pt-[15px] text-footer_text border-t border-footer_text/40">
-            <p>{settings?.default?.copyright}</p>
-            <div className="flex items-center gap-2">
-              {bottomLinks?.map((item: any, index: number) => (
-                <span key={index} className="flex items-center gap-2">
-                  <FooterLink name={item.label} url={item?.url || '/'} target={item?.open_newtab ? '_blank' : '_self'} />
-                  {index < bottomLinks.length - 1 && <span>|</span>}
-                </span>
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Main Footer Grid */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gap: '40px',
+            marginBottom: '60px',
+          }}
+        >
+          {/* About Section */}
+          <div>
+            <div
+              style={{
+                fontSize: '24px',
+                fontWeight: 'bold',
+                marginBottom: '20px',
+                color: '#4a9eff',
+              }}
+            >
+              Your Company
+            </div>
+            <p style={{ lineHeight: '1.6', marginBottom: '24px', color: '#b0b0b0' }}>
+              {staticData.about}
+            </p>
+
+            {/* Social Links */}
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '24px' }}>
+              {staticData.socialLinks.map((social) => (
+                <a
+                  key={social.name}
+                  href={social.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '50%',
+                    backgroundColor: '#2d2d44',
+                    fontSize: '20px',
+                    textDecoration: 'none',
+                    transition: 'all 0.3s ease',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.backgroundColor = '#4a9eff';
+                    e.currentTarget.style.transform = 'translateY(-3px)';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.backgroundColor = '#2d2d44';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  {social.icon}
+                </a>
               ))}
             </div>
           </div>
-        ) : null}
-      </div>
-      <div className="max-xl:hidden fixed bottom-0 right-0 left-0">
-        {settings?.cta_bar?.cta_enabled && settings?.cta_bar?.cta_location == 'footer' && <GenericCTA />}
+
+          {/* Footer Sections with Accordion */}
+          {staticData.footerSections.map((section, index) => (
+            <div key={index}>
+              {/* Mobile: Accordion Header (Clickable) */}
+              <div
+                onClick={() => toggleSection(index)}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  cursor: 'pointer',
+                  padding: '12px 0',
+                  borderBottom: '1px solid #2d2d44',
+                  marginBottom: openSections[index] ? '16px' : '0',
+                  transition: 'all 0.3s ease',
+                }}
+                className="accordion-header md:hidden"
+              >
+                <h3
+                  style={{
+                    fontSize: '18px',
+                    fontWeight: '600',
+                    color: '#ffffff',
+                    margin: 0,
+                  }}
+                >
+                  {section.title}
+                </h3>
+                <span
+                  style={{
+                    fontSize: '20px',
+                    color: '#4a9eff',
+                    transform: openSections[index] ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.3s ease',
+                    display: 'inline-block',
+                  }}
+                >
+                  ▼
+                </span>
+              </div>
+
+              {/* Desktop: Always Visible Header */}
+              <h3
+                style={{
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  marginBottom: '20px',
+                  color: '#ffffff',
+                }}
+                className="hidden md:block"
+              >
+                {section.title}
+              </h3>
+
+              {/* Mobile: Collapsible Content */}
+              <div
+                style={{
+                  maxHeight: openSections[index] ? '500px' : '0',
+                  overflow: 'hidden',
+                  transition: 'max-height 0.4s ease, opacity 0.3s ease',
+                  opacity: openSections[index] ? 1 : 0,
+                }}
+                className="md:hidden"
+              >
+                <ul style={{ listStyle: 'none', padding: 0, margin: 0, paddingBottom: '16px' }}>
+                  {section.links.map((link, linkIndex) => (
+                    <li key={linkIndex} style={{ marginBottom: '12px' }}>
+                      <a
+                        href={link.url}
+                        style={{
+                          color: '#b0b0b0',
+                          textDecoration: 'none',
+                          transition: 'color 0.3s ease',
+                          display: 'block',
+                        }}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.color = '#4a9eff';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.color = '#b0b0b0';
+                        }}
+                      >
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Desktop: Always Visible Content */}
+              <ul
+                style={{ listStyle: 'none', padding: 0, margin: 0 }}
+                className="hidden md:block"
+              >
+                {section.links.map((link, linkIndex) => (
+                  <li key={linkIndex} style={{ marginBottom: '12px' }}>
+                    <a
+                      href={link.url}
+                      style={{
+                        color: '#b0b0b0',
+                        textDecoration: 'none',
+                        transition: 'color 0.3s ease',
+                      }}
+                      onMouseOver={(e) => {
+                        e.currentTarget.style.color = '#4a9eff';
+                      }}
+                      onMouseOut={(e) => {
+                        e.currentTarget.style.color = '#b0b0b0';
+                      }}
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom Section */}
+        <div
+          style={{
+            borderTop: '1px solid #2d2d44',
+            paddingTop: '24px',
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '20px',
+          }}
+        >
+          <p style={{ margin: 0, color: '#808080' }}>{staticData.copyright}</p>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {staticData.bottomLinks.map((link, index) => (
+              <span key={index} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <a
+                  href={link.url}
+                  style={{
+                    color: '#b0b0b0',
+                    textDecoration: 'none',
+                    fontSize: '14px',
+                    transition: 'color 0.3s ease',
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = '#4a9eff';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = '#b0b0b0';
+                  }}
+                >
+                  {link.label}
+                </a>
+                {index < staticData.bottomLinks.length - 1 && (
+                  <span style={{ color: '#808080' }}>|</span>
+                )}
+              </span>
+            ))}
+          </div>
+        </div>
       </div>
 
-      {/* Background blur effects */}
-      <div className="absolute inset-x-0 -bottom-60 lg:-bottom-180 bg-primary/40 h-80 w-80 lg:h-190 lg:w-190 mx-auto blur-[150px] rounded-full translate3d-0"></div>
+      {/* Background Gradient Effect */}
+      <div
+      className='translate3d-0'
+        style={{
+          position: 'absolute',
+          bottom: '-120px',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '500px',
+          height: '500px',
+          background: 'radial-gradient(circle, rgba(74, 158, 255, 0.15) 0%, transparent 70%)',
+          borderRadius: '50%',
+          filter: 'blur(60px)',
+          pointerEvents: 'none',
+        }}
+      />
     </footer>
   );
 };
