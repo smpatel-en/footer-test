@@ -26,30 +26,7 @@ body {
 }
 
 /* Safari Gradient Rendering Fix - Prevents shuttering during animations */
-.translate3d-0 {
-  /* Force GPU acceleration */
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  
-  /* Smooth rendering */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  
-  /* Prevent flickering during transforms */
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  
-  /* Create separate compositing layer */
-  -webkit-perspective: 1000;
-  perspective: 1000;
-  
-  /* Preserve 3D transformations */
-  -webkit-transform-style: preserve-3d;
-  transform-style: preserve-3d;
-  
-  /* Optimize repaints */
-  will-change: transform;
-}
+
 
 /* .translate3d-0 {
   -webkit-font-smoothing: antialiased;
