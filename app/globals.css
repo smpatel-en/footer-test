@@ -51,12 +51,13 @@ body {
   will-change: transform;
 }
 
-/* Additional Safari-specific fixes */
-@supports (-webkit-touch-callout: none) {
-  .translate3d-0 {
-    /* iOS Safari specific optimizations */
-    -webkit-overflow-scrolling: touch;
-    contain: layout paint;
-  }
+/* .translate3d-0 {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+@supports (-webkit-touch-callout: none) {
+  .translate3d-0 {
+    transform: translate3d(0, 0, 0);
+  }
+} */
