@@ -1,0 +1,92 @@
+/* ========================================
+   SAFARI GRADIENT SHUTTERING - QUICK FIX
+   ======================================== */
+
+/* COPY THIS TO YOUR MAIN SITE CSS */
+
+.translate3d-0 {
+  /* Core GPU acceleration */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  
+  /* Prevent flickering */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  
+  /* 3D context */
+  -webkit-perspective: 1000;
+  perspective: 1000;
+  
+  /* Preserve 3D */
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  
+  /* Optimize */
+  will-change: transform;
+  
+  /* Smooth fonts */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  .translate3d-0 {
+    -webkit-overflow-scrolling: touch;
+    contain: layout paint;
+  }
+}
+
+/* ========================================
+   APPLY TO YOUR FOOTER COMPONENT
+   ======================================== */
+
+/* 1. Footer container */
+<footer style={{
+  transform: 'translate3d(0, 0, 0)',
+  WebkitBackfaceVisibility: 'hidden',
+  isolation: 'isolate',
+}}>
+
+/* 2. Content wrapper */
+<div style={{
+  position: 'relative',
+  zIndex: 1,
+}}>
+
+/* 3. Accordion content */
+<div style={{
+  transform: 'translate3d(0, 0, 0)',
+  willChange: isOpen ? 'max-height, opacity' : 'auto',
+}}>
+
+/* 4. Gradient background */
+<div 
+  className="translate3d-0"
+  style={{
+    transform: 'translate3d(-50%, 0, 0)', // Note: -50% for centering
+    WebkitBackfaceVisibility: 'hidden',
+    WebkitPerspective: 1000,
+    WebkitTransformStyle: 'preserve-3d',
+    willChange: 'transform',
+    zIndex: 0,
+    contain: 'layout paint',
+  }}
+/>
+
+/* ========================================
+   IF STILL NOT WORKING
+   ======================================== */
+
+/* Check in DevTools console: */
+const footer = document.querySelector('footer');
+console.log(window.getComputedStyle(footer).transform);
+// Should show: matrix3d(...) not "none"
+
+/* If showing "none", add !important: */
+.translate3d-0 {
+  transform: translate3d(0, 0, 0) !important;
+}
+
+/* Or reduce blur as fallback: */
+filter: blur(40px); /* instead of 60px */

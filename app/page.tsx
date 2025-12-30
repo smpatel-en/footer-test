@@ -75,9 +75,21 @@ const Footer = () => {
         borderTopRightRadius: '16px',
         position: 'relative',
         overflow: 'hidden',
-      }}
+        // Safari gradient fix - Force GPU acceleration
+        transform: 'translate3d(0, 0, 0)',
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
+        // Create new stacking context
+        isolation: 'isolate',
+      } as React.CSSProperties}
     >
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div style={{ 
+        maxWidth: '1200px', 
+        margin: '0 auto',
+        // Safari fix - Isolate content from background gradient
+        position: 'relative',
+        zIndex: 1,
+      }}>
         {/* Main Footer Grid */}
         <div
           style={{
@@ -199,7 +211,12 @@ const Footer = () => {
                   overflow: 'hidden',
                   transition: 'max-height 0.4s ease, opacity 0.3s ease',
                   opacity: openSections[index] ? 1 : 0,
-                }}
+                  // Safari accordion fix - Force GPU layer
+                  transform: 'translate3d(0, 0, 0)',
+                  WebkitBackfaceVisibility: 'hidden',
+                  backfaceVisibility: 'hidden',
+                  willChange: openSections[index] ? 'max-height, opacity' : 'auto',
+                } as React.CSSProperties}
                 className="md:hidden"
               >
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, paddingBottom: '16px' }}>
@@ -302,19 +319,31 @@ const Footer = () => {
 
       {/* Background Gradient Effect */}
       <div
-      className='translate3d-0'
+        className='translate3d-0'
         style={{
           position: 'absolute',
           bottom: '-120px',
           left: '50%',
-          transform: 'translateX(-50%)',
+          transform: 'translate3d(-50%, 0, 0)',
           width: '500px',
           height: '500px',
           background: 'radial-gradient(circle, rgba(74, 158, 255, 0.15) 0%, transparent 70%)',
           borderRadius: '50%',
           filter: 'blur(60px)',
           pointerEvents: 'none',
-        }}
+          // Safari gradient shuttering fixes
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+          WebkitPerspective: 1000,
+          perspective: 1000,
+          WebkitTransformStyle: 'preserve-3d',
+          transformStyle: 'preserve-3d',
+          // Force own compositing layer
+          willChange: 'transform',
+          zIndex: 0,
+          // Contain paint to prevent reflow
+          contain: 'layout paint',
+        } as React.CSSProperties}
       />
     </footer>
   );
